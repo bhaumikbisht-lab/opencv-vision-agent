@@ -11,5 +11,5 @@ tests, and docs.
    `python -m vision_agent.evaluate`
 5. Open a pull request describing what changed and how you tested it.
 
-Good first issues: a new colour range, a motion-detection tool,
-or a YOLO/ONNX detector added as an optional tool.
+Good first issues: a new colour range, a background-subtraction
+(MOG2) motion tool, or a YOLO/ONNX detector added as an optional tool.

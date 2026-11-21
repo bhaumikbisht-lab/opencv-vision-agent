@@ -18,8 +18,8 @@ def main():
     p.add_argument("--source", choices=["demo", "image", "webcam"], default="demo")
     p.add_argument("--path", default="", help="image path (for --source image)")
     p.add_argument("--frames", type=int, default=100, help="webcam frame limit")
-    p.add_argument("--tasks", nargs="*", default=["color", "shapes", "faces"],
-                   choices=["color", "shapes", "faces"])
+    p.add_argument("--tasks", nargs="*", default=["color", "shapes", "faces", "motion"],
+                   choices=["color", "shapes", "faces", "motion"])
     p.add_argument("--out", default="outputs/annotated.png")
     p.add_argument("--state", default="outputs/session_state.json")
     args = p.parse_args()

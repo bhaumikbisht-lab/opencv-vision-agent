@@ -13,7 +13,7 @@ No black-box framework — the whole loop fits in one readable file.
 ```
 OBSERVE  read frame + quality gate (brightness, blur)
 DECIDE   quality failed? correct first. Otherwise pick detectors by task
-ACT      colour-blob tracker · shape/contour detector · Haar face detector
+ACT      colour-blob tracker · shape/contour detector · Haar face detector · motion detector (frame differencing vs the previous frame, kept in agent memory)
 VERIFY   only in-frame, confirmed detections are written to memory;
          zero/failed results are logged as failure modes, not ignored
 ```
@@ -34,12 +34,14 @@ python examples/demo.py                      # minimal example
 
 ## Evaluation
 The demo scene is synthetic with **known ground truth** (3 colour blobs
-at known centres, ≥3 shapes, and a dark+blurred copy the quality gate
-must flag), so the harness scores each component separately:
+at known centres, ≥3 shapes, a blob moved between two frames that
+the motion detector must catch, and a dark+blurred copy the quality
+gate must flag), so the harness scores each component separately:
 
 ```
 Colour blobs : 3/3   {'red': 'hit', 'green': 'hit', 'blue': 'hit'}
 Shapes found : 4 (expected >= 3)
+Motion       : PASS  (1 box on a moved blob)
 Quality gate : PASS
 OVERALL: PASS
 ```
@@ -61,7 +63,7 @@ vision_agent/
   tools.py              colour, shape, face, quality & annotation tools
   state.py              session memory (JSON save/load)
   evaluate.py           evaluation harness (known ground truth)
-tests/test_agent.py     4 tests
+tests/test_agent.py     7 tests
 examples/demo.py        minimal usage example
 ```
 
