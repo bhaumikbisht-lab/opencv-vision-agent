@@ -38,6 +38,35 @@ def test_agent_demo_run_detects():
     assert result["ok"] and result["detections"] >= 3, result
 
 
+def _moved_scene():
+    import cv2
+    a = tools.make_demo_image()
+    b = tools.make_demo_image()
+    cv2.circle(b, (140, 140), 45, (200, 200, 200), -1)  # erase red blob
+    cv2.circle(b, (200, 140), 45, (0, 0, 255), -1)      # redraw it moved
+    return a, b
+
+
+def test_motion_detects_movement():
+    a, b = _moved_scene()
+    boxes = tools.detect_motion(a, b)
+    assert boxes, "moved blob must produce at least one motion box"
+
+
+def test_motion_quiet_on_same_frame():
+    img = tools.make_demo_image()
+    assert tools.detect_motion(img, img.copy()) == []
+
+
+def test_agent_motion_across_frames():
+    a, b = _moved_scene()
+    agent = VisionAgent(tasks=("motion",))
+    first = agent.process_image(a)
+    second = agent.process_image(b)
+    assert first["detections"] == 0, first
+    assert second["detections"] >= 1, second
+
+
 if __name__ == "__main__":
     for name, fn in sorted({k: v for k, v in globals().items()
                             if k.startswith("test_")}.items()):
