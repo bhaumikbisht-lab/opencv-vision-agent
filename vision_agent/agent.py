@@ -10,7 +10,7 @@ A deliberate, inspectable loop — no black-box framework:
                 confirmed (non-empty, inside the frame); a zero result
                 is logged as a failure mode, not silently ignored
 
-Tasks: "all" (default), "color", "shapes", "faces"
+Tasks: "all" (default), "color", "shapes", "faces", "motion"
 """
 
 from __future__ import annotations
@@ -24,9 +24,10 @@ from .state import AgentState
 
 class VisionAgent:
     def __init__(self, session_name: str = "vision-session",
-                 tasks: tuple = ("color", "shapes", "faces")):
+                 tasks: tuple = ("color", "shapes", "faces", "motion")):
         self.state = AgentState(session_name=session_name)
         self.tasks = tasks
+        self._prev_frame = None  # last raw frame, for motion detection
 
     # ---- one full loop on one image -------------------------------------
     def process_image(self, img) -> dict:
@@ -53,8 +54,19 @@ class VisionAgent:
             if quality["blurry"]:
                 self.state.log_failure("blurry", "corrected with sharpening")
 
+        # MOTION (needs the previous frame — kept in agent memory)
+        motion_items = []
+        if "motion" in self.tasks:
+            if self._prev_frame is not None:
+                motion_items = tools.detect_motion(self._prev_frame, img)
+            else:
+                self.state.log_action("motion", "no previous frame yet — skipped")
+        self._prev_frame = img.copy()
+
         # ACT (detectors chosen by task)
         found_by_kind = {}
+        if "motion" in self.tasks:
+            found_by_kind["motion"] = motion_items
         if "color" in self.tasks:
             found_by_kind["color_blob"] = tools.detect_color_blobs(img)
         if "shapes" in self.tasks:

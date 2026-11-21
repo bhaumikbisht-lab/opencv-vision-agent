@@ -7,4 +7,4 @@ from .agent import VisionAgent
 from .state import AgentState
 
 __all__ = ["VisionAgent", "AgentState"]
-__version__ = "1.0.0"
+__version__ = "1.1.0"

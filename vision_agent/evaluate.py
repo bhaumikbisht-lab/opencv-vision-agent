@@ -46,6 +46,14 @@ def main() -> None:
     blob_score = score_blobs(tools.detect_color_blobs(img))
     shapes = tools.detect_shapes(img)
 
+    # Motion: erase the red blob at (140,140), redraw it at (200,140)
+    moved = tools.make_demo_image()
+    cv2.circle(moved, (140, 140), 45, (200, 200, 200), -1)
+    cv2.circle(moved, (200, 140), 45, (0, 0, 255), -1)
+    motion_boxes = tools.detect_motion(img, moved)
+    motion_ok = any(b["x"] < 245 and b["x"] + b["w"] > 95 and
+                    b["y"] < 185 and b["y"] + b["h"] > 95 for b in motion_boxes)
+
     bad = cv2.convertScaleAbs(img, alpha=0.15, beta=0)          # darken
     bad = cv2.GaussianBlur(bad, (21, 21), 0)                    # blur
     q = tools.check_quality(bad)
@@ -54,11 +62,12 @@ def main() -> None:
     print("=== Vision Agent — evaluation ===")
     print(f"Colour blobs : {blob_score['score']}/{blob_score['max']}  {blob_score['detail']}")
     print(f"Shapes found : {len(shapes)} (expected >= 3)")
+    print(f"Motion       : {'PASS' if motion_ok else 'FAIL'}  ({len(motion_boxes)} box(es) on a moved blob)")
     print(f"Quality gate : {'PASS' if quality_ok else 'FAIL'}  "
           f"(dark+blurred copy flagged: dark={q['too_dark']}, blurry={q['blurry']})")
     print(f"Frames: {agent.state.frames_processed} | "
           f"Failures handled: {len(agent.state.failures)}")
-    overall = blob_score["score"] == blob_score["max"] and len(shapes) >= 3 and quality_ok
+    overall = blob_score["score"] == blob_score["max"] and len(shapes) >= 3 and quality_ok and motion_ok
     print(f"OVERALL: {'PASS' if overall else 'CHECK COMPONENTS ABOVE'}")
 
 
